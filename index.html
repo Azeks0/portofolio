@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Andrei Voinea — ML Engineer</title>
+<meta name="description" content="ML Engineer working on speech, vision, and language systems — published NLP researcher.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="grain"></div>
+
+<header class="nav">
+  <a class="nav__mark" href="#top">AV</a>
+  <nav class="nav__links">
+    <a href="#work">Work</a>
+    <a href="#research">Research</a>
+    <a href="#contact">Contact</a>
+  </nav>
+</header>
+
+<section class="hero" id="top">
+  <canvas id="brain-canvas"></canvas>
+
+  <div class="hero__content">
+    <p class="eyebrow">ML ENGINEER — SPEECH · VISION · LANGUAGE</p>
+    <h1 class="hero__title">Andrei Voinea</h1>
+    <p class="hero__subtitle">
+      Building perception and reasoning systems that hold up in the real world —
+      from safety-critical navigation models to published research in low-resource NLP.
+    </p>
+    <div class="hero__meta">
+      <span>Currently — ML Engineer @ dotLumen</span>
+      <span class="dot">·</span>
+      <span>Cluj-Napoca, RO</span>
+    </div>
+  </div>
+
+  <div class="scroll-cue" aria-hidden="true">
+    <span>scroll</span>
+    <div class="scroll-cue__line"></div>
+  </div>
+</section>
+
+<main>
+
+  <section class="section" id="work">
+    <p class="section__eyebrow">SELECTED WORK</p>
+    <h2 class="section__title">Systems, not just models</h2>
+    <div class="card-grid">
+      <article class="card">
+        <p class="card__tag">SELF-SUPERVISED · ASTROPHYSICS</p>
+        <h3>Multi-Detector Autoencoder for Gamma-Ray Burst Detection</h3>
+        <p>An end-to-end pipeline over 147K Fermi satellite samples — 12-detector geometric
+        alignment, a 50M-parameter autoencoder, and anomaly detection via reconstruction error.
+        99% background classification accuracy.</p>
+      </article>
+      <article class="card">
+        <p class="card__tag">RAG · FULL-STACK</p>
+        <h3>AI Resume Analyzer</h3>
+        <p>A resume analysis platform pairing a FastAPI backend with pgvector semantic search
+        and an LLM-driven chatbot for job-match reasoning, served through a Next.js frontend.</p>
+      </article>
+      <article class="card">
+        <p class="card__tag">SAFETY-CRITICAL · CV</p>
+        <h3>Pedestrian Navigation, dotLumen</h3>
+        <p>Failure-mode analysis and robustness checks for a medical-grade navigation device —
+        plus voice command models and CV tooling that moved detection accuracy forward.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="research">
+    <p class="section__eyebrow">RESEARCH</p>
+    <h2 class="section__title">Published work</h2>
+    <div class="pub-list">
+      <a class="pub" href="#">
+        <span class="pub__year">2026</span>
+        <span class="pub__body">
+          <strong>Validator-Guided Hard Negative Mining for Masked Language Modeling</strong>
+          <em>in Low-Resource Ancient Languages</em> — ACL 2026 Student Research Workshop
+        </span>
+      </a>
+      <a class="pub" href="#">
+        <span class="pub__year">2025</span>
+        <span class="pub__body">
+          <strong>Reconstruction of Babylonian Texts: Integrating Transformers with Symbolic Reasoning</strong>
+          16th Computer Science Student Conference, Romania — top distinction
+        </span>
+      </a>
+    </div>
+  </section>
+
+  <section class="section section--contact" id="contact">
+    <p class="section__eyebrow">CONTACT</p>
+    <h2 class="section__title">Let's talk</h2>
+    <div class="contact-links">
+      <a href="mailto:andreivoineava@gmail.com">andreivoineava@gmail.com</a>
+      <a href="https://linkedin.com/in/voinea-andrei-541a04223" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://github.com/Azeks0" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </section>
+
+</main>
+
+<script type="module" src="brain.js"></script>
+</body>
+</html>
