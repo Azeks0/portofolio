@@ -7,7 +7,7 @@ const NODE_COUNT = 560;
 const K_NEAREST = 3;
 const MAX_EDGE_DIST = 0.34;
 const BASE_ROTATE_SPEED = 0.06;   // rad/sec
-const JITTER_AMPLITUDE = 0.018;   // fraction of scene units
+const JITTER_AMPLITUDE = 0.080;   // fraction of scene units
 const JITTER_SPEED = 0.55;
 const POINTER_INFLUENCE = 0.35;   // how much the cursor nudges rotation
 const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -21,7 +21,7 @@ const SURGE_MAX_INTERVAL = 0.4;
 const SURGE_BURST_MIN = 1;        // how many edges fire per burst
 const SURGE_BURST_MAX = 4;
 const SURGE_DECAY_SPEED = 2.6;    // higher = faster flash decay
-const SURGE_PEAK = 1.6;           // brightness multiplier at the instant of firing
+const SURGE_PEAK = 3;           // brightness multiplier at the instant of firing
 
 /* ============================================================
    Cheap deterministic 3D "noise" — a few offset sine waves.
