@@ -12,6 +12,17 @@ const JITTER_SPEED = 0.55;
 const POINTER_INFLUENCE = 0.35;   // how much the cursor nudges rotation
 const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/* "aliveness" — edge signal activity */
+const AMBIENT_BASE = 0.22;        // resting glow, all edges
+const AMBIENT_AMPLITUDE = 0.14;   // slow per-edge shimmer on top of the base
+const AMBIENT_SPEED = 0.5;
+const SURGE_MIN_INTERVAL = 0.08;  // seconds between surge bursts
+const SURGE_MAX_INTERVAL = 0.4;
+const SURGE_BURST_MIN = 1;        // how many edges fire per burst
+const SURGE_BURST_MAX = 4;
+const SURGE_DECAY_SPEED = 2.6;    // higher = faster flash decay
+const SURGE_PEAK = 1.6;           // brightness multiplier at the instant of firing
+
 /* ============================================================
    Cheap deterministic 3D "noise" — a few offset sine waves.
    Not a real simplex implementation, but gives organic,
@@ -190,16 +201,67 @@ const lineArray = new Float32Array(edges.length * 6);
 const lineGeometry = new THREE.BufferGeometry();
 lineGeometry.setAttribute('position', new THREE.BufferAttribute(lineArray, 3));
 
+/* per-edge color buffer — lets each synapse glow independently */
+const lineColorArray = new Float32Array(edges.length * 6);
+lineGeometry.setAttribute('color', new THREE.BufferAttribute(lineColorArray, 3));
+
 const lineMaterial = new THREE.LineBasicMaterial({
-  color: new THREE.Color('#2f6dff'),
+  color: new THREE.Color('#ffffff'),
+  vertexColors: true,
   transparent: true,
-  opacity: 0.22,
+  opacity: 0.32,
   blending: THREE.AdditiveBlending,
   depthWrite: false,
 });
 
 const lineSegments = new THREE.LineSegments(lineGeometry, lineMaterial);
 group.add(lineSegments);
+
+/* per-edge "aliveness" state */
+const EDGE_BASE_COLOR = new THREE.Color('#3d76ff');
+const EDGE_HOT_COLOR = new THREE.Color('#bfe9ff');
+const edgePulse = new Float32Array(edges.length);          // decaying surge charge
+const edgeAmbientPhase = new Float32Array(edges.length).map(() => Math.random() * Math.PI * 2);
+let nextSurgeAt = 0;
+const _tmpColor = new THREE.Color();
+
+function triggerRandomSurges(t) {
+  if (t < nextSurgeAt) return;
+  const burstCount = SURGE_BURST_MIN + Math.floor(Math.random() * (SURGE_BURST_MAX - SURGE_BURST_MIN + 1));
+  for (let i = 0; i < burstCount; i++) {
+    const e = Math.floor(Math.random() * edges.length);
+    edgePulse[e] = SURGE_PEAK;
+  }
+  nextSurgeAt = t + SURGE_MIN_INTERVAL + Math.random() * (SURGE_MAX_INTERVAL - SURGE_MIN_INTERVAL);
+}
+
+function updateEdgeColors(t, dt) {
+  const colorArr = lineGeometry.attributes.color.array;
+  for (let e = 0; e < edges.length; e++) {
+    // decay any active surge charge
+    if (edgePulse[e] > 0.001) {
+      edgePulse[e] *= Math.exp(-dt * SURGE_DECAY_SPEED);
+    } else {
+      edgePulse[e] = 0;
+    }
+
+    const ambient = 0.5 + 0.5 * Math.sin(t * AMBIENT_SPEED + edgeAmbientPhase[e]);
+    const intensity = AMBIENT_BASE + AMBIENT_AMPLITUDE * ambient + edgePulse[e];
+
+    _tmpColor.copy(EDGE_BASE_COLOR).lerp(EDGE_HOT_COLOR, Math.min(intensity, 1));
+    const overdrive = Math.max(0, intensity - 1) * 0.9; // extra flash punch on hard surges
+    _tmpColor.multiplyScalar(0.65 + intensity * 0.7 + overdrive);
+
+    const o = e * 6;
+    colorArr[o] = _tmpColor.r;
+    colorArr[o + 1] = _tmpColor.g;
+    colorArr[o + 2] = _tmpColor.b;
+    colorArr[o + 3] = _tmpColor.r;
+    colorArr[o + 4] = _tmpColor.g;
+    colorArr[o + 5] = _tmpColor.b;
+  }
+  lineGeometry.attributes.color.needsUpdate = true;
+}
 
 function syncLinePositions() {
   const arr = lineGeometry.attributes.position.array;
@@ -259,6 +321,13 @@ function animate() {
     }
     pointsGeometry.attributes.position.needsUpdate = true;
     syncLinePositions();
+
+    // electric surge activity on the edges
+    triggerRandomSurges(t);
+    updateEdgeColors(t, dt);
+
+    // faint synced breathing on the nodes themselves
+    pointsMaterial.opacity = 0.88 + Math.sin(t * 0.7) * 0.1;
   }
 
   targetRotY = autoRotation + pointerX * POINTER_INFLUENCE;
