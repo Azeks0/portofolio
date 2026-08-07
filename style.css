@@ -310,6 +310,28 @@ a { color: inherit; text-decoration: none; }
   margin: 0 auto;
 }
 
+.reconstructed-wedge,
+.reconstructed-glow,
+.reconstructed-outline {
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.tablet-figure.is-visible .reconstructed-wedge,
+.tablet-figure.is-visible .reconstructed-glow,
+.tablet-figure.is-visible .reconstructed-outline {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reconstructed-wedge,
+  .reconstructed-glow,
+  .reconstructed-outline {
+    transition: none;
+    opacity: 1;
+  }
+}
+
 .tablet-figure__caption {
   max-width: 560px;
   margin: 28px auto 0;
