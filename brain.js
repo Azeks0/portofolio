@@ -6,22 +6,34 @@ import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 const NODE_COUNT = 560;
 const K_NEAREST = 3;
 const MAX_EDGE_DIST = 0.34;
-const BASE_ROTATE_SPEED = 0.06;   // rad/sec
-const JITTER_AMPLITUDE = 0.080;   // fraction of scene units
-const JITTER_SPEED = 0.55;
+const BASE_ROTATE_SPEED = 0.11;   // rad/sec
+const JITTER_AMPLITUDE = 0.026;   // fraction of scene units
+const JITTER_SPEED = 0.85;
 const POINTER_INFLUENCE = 0.35;   // how much the cursor nudges rotation
 const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* "aliveness" — edge signal activity */
-const AMBIENT_BASE = 0.22;        // resting glow, all edges
-const AMBIENT_AMPLITUDE = 0.14;   // slow per-edge shimmer on top of the base
-const AMBIENT_SPEED = 0.5;
-const SURGE_MIN_INTERVAL = 0.08;  // seconds between surge bursts
-const SURGE_MAX_INTERVAL = 0.4;
-const SURGE_BURST_MIN = 1;        // how many edges fire per burst
-const SURGE_BURST_MAX = 4;
-const SURGE_DECAY_SPEED = 2.6;    // higher = faster flash decay
-const SURGE_PEAK = 3;           // brightness multiplier at the instant of firing
+const AMBIENT_BASE = 0.28;        // resting glow, all edges
+const AMBIENT_AMPLITUDE = 0.22;   // slow per-edge shimmer on top of the base
+const AMBIENT_SPEED = 0.75;
+const SURGE_MIN_INTERVAL = 0.02;  // seconds between surge bursts
+const SURGE_MAX_INTERVAL = 0.1;
+const SURGE_BURST_MIN = 4;        // how many edges fire per burst
+const SURGE_BURST_MAX = 12;
+const SURGE_DECAY_SPEED = 3.6;    // higher = faster flash decay
+const SURGE_PEAK = 1.8;           // brightness multiplier at the instant of firing
+
+/* traveling signal particles — the "vibrant" main event */
+const SIGNAL_COUNT = 24;
+const SIGNAL_PATH_MIN = 3;        // nodes per journey
+const SIGNAL_PATH_MAX = 7;
+const SIGNAL_SEGMENT_TIME_MIN = 0.1; // seconds to cross one edge
+const SIGNAL_SEGMENT_TIME_MAX = 0.19;
+const SIGNAL_RESPAWN_MIN = 0.02;  // pause before a slot starts a new journey
+const SIGNAL_RESPAWN_MAX = 0.18;
+const SIGNAL_EDGE_PEAK = 4.5;     // much hotter than a random ambient surge
+const SIGNAL_NODE_PEAK = 3.8;
+const SIGNAL_NODE_DECAY_SPEED = 7;
 
 /* ============================================================
    Cheap deterministic 3D "noise" — a few offset sine waves.
@@ -184,13 +196,24 @@ const nodePhases = new Float32Array(NODE_COUNT).map(() => Math.random() * Math.P
 const pointsGeometry = new THREE.BufferGeometry();
 pointsGeometry.setAttribute('position', new THREE.BufferAttribute(currentPositions, 3));
 
+const NODE_BASE_COLOR = new THREE.Color('#7db2ff');
+const NODE_HOT_COLOR = new THREE.Color('#e8faff');
+const nodeColorArray = new Float32Array(NODE_COUNT * 3);
+for (let i = 0; i < NODE_COUNT; i++) {
+  nodeColorArray[i * 3] = NODE_BASE_COLOR.r;
+  nodeColorArray[i * 3 + 1] = NODE_BASE_COLOR.g;
+  nodeColorArray[i * 3 + 2] = NODE_BASE_COLOR.b;
+}
+pointsGeometry.setAttribute('color', new THREE.BufferAttribute(nodeColorArray, 3));
+const nodeGlow = new Float32Array(NODE_COUNT); // decaying charge, driven by signals passing through
+
 const pointsMaterial = new THREE.PointsMaterial({
   size: 0.052,
   map: makeGlowTexture(),
   transparent: true,
   depthWrite: false,
   blending: THREE.AdditiveBlending,
-  color: new THREE.Color('#7db2ff'),
+  vertexColors: true,
 });
 
 const pointCloud = new THREE.Points(pointsGeometry, pointsMaterial);
@@ -209,7 +232,7 @@ const lineMaterial = new THREE.LineBasicMaterial({
   color: new THREE.Color('#ffffff'),
   vertexColors: true,
   transparent: true,
-  opacity: 0.32,
+  opacity: 0.4,
   blending: THREE.AdditiveBlending,
   depthWrite: false,
 });
@@ -261,6 +284,174 @@ function updateEdgeColors(t, dt) {
     colorArr[o + 5] = _tmpColor.b;
   }
   lineGeometry.attributes.color.needsUpdate = true;
+}
+
+function updateNodeColors(dt) {
+  const colorArr = pointsGeometry.attributes.color.array;
+  for (let i = 0; i < NODE_COUNT; i++) {
+    if (nodeGlow[i] > 0.001) {
+      nodeGlow[i] *= Math.exp(-dt * SIGNAL_NODE_DECAY_SPEED);
+    } else {
+      nodeGlow[i] = 0;
+      continue; // already at rest color, no write needed
+    }
+    _tmpColor.copy(NODE_BASE_COLOR).lerp(NODE_HOT_COLOR, Math.min(nodeGlow[i], 1));
+    _tmpColor.multiplyScalar(1 + Math.max(0, nodeGlow[i] - 1) * 0.8);
+    colorArr[i * 3] = _tmpColor.r;
+    colorArr[i * 3 + 1] = _tmpColor.g;
+    colorArr[i * 3 + 2] = _tmpColor.b;
+  }
+  pointsGeometry.attributes.color.needsUpdate = true;
+}
+
+/* ============================================================
+   Traveling signals — particles that walk a real path through
+   the graph, brightening each edge and node as they pass.
+   ============================================================ */
+const adjacency = Array.from({ length: NODE_COUNT }, () => []);
+edges.forEach(([a, b]) => {
+  adjacency[a].push(b);
+  adjacency[b].push(a);
+});
+
+const edgeIndexMap = new Map();
+edges.forEach(([a, b], e) => {
+  const key = a < b ? `${a}_${b}` : `${b}_${a}`;
+  edgeIndexMap.set(key, e);
+});
+
+function buildRandomWalk(minLen, maxLen) {
+  const targetLen = minLen + Math.floor(Math.random() * (maxLen - minLen + 1));
+  let start = Math.floor(Math.random() * NODE_COUNT);
+  let tries = 0;
+  while (adjacency[start].length === 0 && tries < 20) {
+    start = Math.floor(Math.random() * NODE_COUNT);
+    tries++;
+  }
+  if (adjacency[start].length === 0) return null;
+
+  const path = [start];
+  let prev = -1;
+  let current = start;
+  for (let i = 1; i < targetLen; i++) {
+    const neighbors = adjacency[current];
+    if (neighbors.length === 0) break;
+    // prefer not to immediately backtrack when there's another option
+    const candidates = neighbors.filter((n) => n !== prev);
+    const pool = candidates.length > 0 ? candidates : neighbors;
+    const next = pool[Math.floor(Math.random() * pool.length)];
+    path.push(next);
+    prev = current;
+    current = next;
+  }
+  return path.length >= 2 ? path : null;
+}
+
+class Signal {
+  constructor() {
+    this.active = false;
+    this.respawnAt = Math.random() * SIGNAL_RESPAWN_MAX;
+    this.path = null;
+    this.segIndex = 0;
+    this.segStart = 0;
+    this.segDuration = SIGNAL_SEGMENT_TIME_MIN;
+  }
+
+  trySpawn(t) {
+    const walk = buildRandomWalk(SIGNAL_PATH_MIN, SIGNAL_PATH_MAX);
+    if (!walk) {
+      this.respawnAt = t + 0.2; // graph hiccup, try again shortly
+      return;
+    }
+    this.path = walk;
+    this.segIndex = 0;
+    this.segStart = t;
+    this.segDuration = SIGNAL_SEGMENT_TIME_MIN + Math.random() * (SIGNAL_SEGMENT_TIME_MAX - SIGNAL_SEGMENT_TIME_MIN);
+    this.active = true;
+  }
+
+  update(t, outPosition) {
+    if (!this.active) {
+      if (t >= this.respawnAt) this.trySpawn(t);
+      return 0; // envelope 0 = fully hidden
+    }
+
+    let segT = (t - this.segStart) / this.segDuration;
+    if (segT >= 1) {
+      this.segIndex++;
+      if (this.segIndex >= this.path.length - 1) {
+        this.active = false;
+        this.respawnAt = t + SIGNAL_RESPAWN_MIN + Math.random() * (SIGNAL_RESPAWN_MAX - SIGNAL_RESPAWN_MIN);
+        return 0;
+      }
+      this.segStart = t;
+      segT = 0;
+    }
+
+    const a = this.path[this.segIndex];
+    const b = this.path[this.segIndex + 1];
+
+    // charge the edge and both endpoint nodes as the signal crosses
+    const key = a < b ? `${a}_${b}` : `${b}_${a}`;
+    const eIdx = edgeIndexMap.get(key);
+    const crossingPulse = Math.sin(Math.min(segT, 1) * Math.PI); // 0 -> 1 -> 0 across the segment
+    if (eIdx !== undefined) {
+      edgePulse[eIdx] = Math.max(edgePulse[eIdx], crossingPulse * SIGNAL_EDGE_PEAK);
+    }
+    nodeGlow[a] = Math.max(nodeGlow[a], (1 - segT) * SIGNAL_NODE_PEAK);
+    nodeGlow[b] = Math.max(nodeGlow[b], segT * SIGNAL_NODE_PEAK);
+
+    // interpolate the particle's world position between the two (jittering) nodes
+    outPosition.set(
+      currentPositions[a * 3] + (currentPositions[b * 3] - currentPositions[a * 3]) * segT,
+      currentPositions[a * 3 + 1] + (currentPositions[b * 3 + 1] - currentPositions[a * 3 + 1]) * segT,
+      currentPositions[a * 3 + 2] + (currentPositions[b * 3 + 2] - currentPositions[a * 3 + 2]) * segT
+    );
+
+    // fade in/out over the whole journey so it never pops
+    const globalProgress = (this.segIndex + segT) / (this.path.length - 1);
+    const fade = Math.min(1, globalProgress / 0.15, (1 - globalProgress) / 0.15);
+    return Math.max(0.15, fade) * (0.55 + crossingPulse * 0.45);
+  }
+}
+
+const signals = Array.from({ length: SIGNAL_COUNT }, () => new Signal());
+
+const SIGNAL_HOT_COLOR = new THREE.Color('#eafcff');
+const signalPositions = new Float32Array(SIGNAL_COUNT * 3);
+const signalColors = new Float32Array(SIGNAL_COUNT * 3);
+const signalGeometry = new THREE.BufferGeometry();
+signalGeometry.setAttribute('position', new THREE.BufferAttribute(signalPositions, 3));
+signalGeometry.setAttribute('color', new THREE.BufferAttribute(signalColors, 3));
+
+const signalMaterial = new THREE.PointsMaterial({
+  size: 0.13,
+  map: makeGlowTexture(),
+  transparent: true,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending,
+  vertexColors: true,
+});
+
+const signalPoints = new THREE.Points(signalGeometry, signalMaterial);
+group.add(signalPoints);
+
+const _signalPos = new THREE.Vector3();
+
+function updateSignals(t) {
+  for (let s = 0; s < SIGNAL_COUNT; s++) {
+    const envelope = signals[s].update(t, _signalPos);
+    signalPositions[s * 3] = _signalPos.x;
+    signalPositions[s * 3 + 1] = _signalPos.y;
+    signalPositions[s * 3 + 2] = _signalPos.z;
+
+    const c = SIGNAL_HOT_COLOR;
+    signalColors[s * 3] = c.r * envelope;
+    signalColors[s * 3 + 1] = c.g * envelope;
+    signalColors[s * 3 + 2] = c.b * envelope;
+  }
+  signalGeometry.attributes.position.needsUpdate = true;
+  signalGeometry.attributes.color.needsUpdate = true;
 }
 
 function syncLinePositions() {
@@ -324,7 +515,13 @@ function animate() {
 
     // electric surge activity on the edges
     triggerRandomSurges(t);
+
+    // traveling signals — must run before the color pass so their
+    // edge/node charges are included in this frame's render
+    updateSignals(t);
+
     updateEdgeColors(t, dt);
+    updateNodeColors(dt);
 
     // faint synced breathing on the nodes themselves
     pointsMaterial.opacity = 0.88 + Math.sin(t * 0.7) * 0.1;
