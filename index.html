@@ -96,78 +96,124 @@
       </a>
     </div>
 
-    <figure class="reconstruction" id="reconstruction">
-      <div class="reconstruction__stage">
+    <div class="paper-feature">
+      <div class="paper-feature__scrollytelling" id="reconstruction-scroller">
+        <div class="paper-feature__sticky">
+          <div class="paper-feature__grid">
 
-        <div class="reconstruction__textzone">
-        <div class="reconstruction__cuneiform" lang="sux" aria-hidden="true">
-          <span class="glyph">&#x12000;</span>
-          <span class="glyph">&#x12009;</span>
-          <span class="glyph">&#x1200A;</span>
-          <span class="glyph gap">
-            <span class="glyph__placeholder">&#x25A1;</span>
-            <span class="glyph__resolved">&#x12005;</span>
-          </span>
-          <span class="glyph">&#x12038;</span>
-          <span class="glyph">&#x12003;</span>
-          <span class="glyph gap">
-            <span class="glyph__placeholder">&#x25A1;</span>
-            <span class="glyph__resolved">&#x1200D;</span>
-          </span>
-          <span class="glyph">&#x12011;</span>
-          <span class="glyph">&#x12007;</span>
+            <div class="paper-panel">
+              <p class="paper-panel__eyebrow">ACL 2026 STUDENT RESEARCH WORKSHOP</p>
+              <h3 class="paper-panel__title">Validator-Guided Hard Negative Mining for Masked Language Modeling in Low-Resource Ancient Languages</h3>
+              <p class="paper-panel__desc">
+                Sumerian is about as low-resource as language modeling gets: a language
+                isolate with no living relatives to transfer from, and of CDLI's 143,000+
+                digitized tablets, only 370 carry the part-of-speech annotations needed to
+                train on. This paper asks how far explicit linguistic structure can
+                substitute for scale — a hierarchical validator distilled from those 370
+                tablets constrains a fine-tuned mBERT's candidate space and supplies hard
+                negatives during training, rather than relying on cross-lingual transfer
+                that isn't available here.
+              </p>
+              <p class="paper-panel__desc">
+                The combination pushes masked-token prediction from an 18.0% baseline to
+                86.7% hit@10. Testing on tablets from 600 years earlier shows the
+                validator's rules are period-specific and degrade out-of-domain, while
+                BERT's learned representations transfer far more robustly across time —
+                a concrete look at where rule-based and neural components each pull their
+                weight in an extreme low-resource setting.
+              </p>
+              <div class="paper-panel__stats">
+                <div class="stat">
+                  <span class="stat__value">86.7%</span>
+                  <span class="stat__label">hit@10, combined</span>
+                </div>
+                <div class="stat">
+                  <span class="stat__value">+68.7pp</span>
+                  <span class="stat__label">vs. vanilla mBERT</span>
+                </div>
+                <div class="stat">
+                  <span class="stat__value">370</span>
+                  <span class="stat__label">annotated tablets</span>
+                </div>
+              </div>
+            </div>
+
+            <figure class="reconstruction" id="reconstruction">
+              <div class="reconstruction__stage">
+
+                <div class="reconstruction__textzone">
+                <div class="reconstruction__cuneiform" lang="sux" aria-hidden="true">
+                  <span class="glyph">&#x12000;</span>
+                  <span class="glyph">&#x12009;</span>
+                  <span class="glyph">&#x1200A;</span>
+                  <span class="glyph gap">
+                    <span class="glyph__placeholder">&#x25A1;</span>
+                    <span class="glyph__resolved">&#x12005;</span>
+                  </span>
+                  <span class="glyph">&#x12038;</span>
+                  <span class="glyph">&#x12003;</span>
+                  <span class="glyph gap">
+                    <span class="glyph__placeholder">&#x25A1;</span>
+                    <span class="glyph__resolved">&#x1200D;</span>
+                  </span>
+                  <span class="glyph">&#x12011;</span>
+                  <span class="glyph">&#x12007;</span>
+                </div>
+
+                <div class="reconstruction__translit">
+                  <span class="word">nam-gi4-me-eš3</span>
+                  <span class="word gap">
+                    <span class="word__placeholder">[...]</span>
+                    <span class="word__resolved">ak</span>
+                  </span>
+                  <span class="word">nig2</span>
+                  <span class="word gap">
+                    <span class="word__placeholder">[...]</span>
+                    <span class="word__resolved">šag4</span>
+                  </span>
+                  <span class="word">hul2-le-dam</span>
+                </div>
+                </div>
+
+                <div class="reconstruction__engine" aria-hidden="true">
+                  <svg class="engine-icon" viewBox="0 0 140 40" xmlns="http://www.w3.org/2000/svg">
+                    <g class="engine-net">
+                      <line x1="10" y1="20" x2="22" y2="12" stroke="var(--cyan-glow)" stroke-width="1.2"/>
+                      <line x1="10" y1="20" x2="22" y2="28" stroke="var(--cyan-glow)" stroke-width="1.2"/>
+                      <line x1="22" y1="12" x2="22" y2="28" stroke="var(--cyan-glow)" stroke-width="1.2"/>
+                      <circle cx="10" cy="20" r="3" fill="var(--cyan-glow)"/>
+                      <circle cx="22" cy="12" r="3" fill="var(--cyan-glow)"/>
+                      <circle cx="22" cy="28" r="3" fill="var(--cyan-glow)"/>
+                    </g>
+                    <line class="engine-pulse" x1="32" y1="20" x2="100" y2="20" stroke="var(--blue-bright)" stroke-width="1.4" stroke-dasharray="5 5"/>
+                    <g class="engine-symbol" fill="none" stroke="var(--blue-bright)" stroke-width="1.6" stroke-linecap="round">
+                      <path d="M110,10 C104,10 104,18 100,20 C104,22 104,30 110,30"/>
+                      <path d="M130,10 C136,10 136,18 140,20 C136,22 136,30 130,30"/>
+                    </g>
+                  </svg>
+                  <span class="reconstruction__engine-label">neural&nbsp;⇄&nbsp;symbolic reconciliation</span>
+                </div>
+
+                <p class="reconstruction__translation">
+                  &ldquo;(His) treating (me) as a colleague, it is something that is to make the heart rejoice.&rdquo;
+                </p>
+              </div>
+
+              <figcaption class="reconstruction__caption">
+                <span class="reconstruction__key">
+                  <span class="reconstruction__swatch reconstruction__swatch--gap"></span> damaged / illegible
+                  <span class="reconstruction__swatch reconstruction__swatch--blue"></span> model-reconstructed
+                </span>
+                Scroll to reconstruct — one line from the Sumerian corpus the model was trained on.
+                Cuneiform shown in real Unicode glyphs for authentic texture, not a literal
+                sign-by-sign transcription; transliteration and translation are as published.
+              </figcaption>
+            </figure>
+
+          </div>
         </div>
-
-        <div class="reconstruction__translit">
-          <span class="word">nam-gi4-me-eš3</span>
-          <span class="word gap">
-            <span class="word__placeholder">[...]</span>
-            <span class="word__resolved">ak</span>
-          </span>
-          <span class="word">nig2</span>
-          <span class="word gap">
-            <span class="word__placeholder">[...]</span>
-            <span class="word__resolved">šag4</span>
-          </span>
-          <span class="word">hul2-le-dam</span>
-        </div>
-        </div>
-
-        <div class="reconstruction__engine" aria-hidden="true">
-          <svg class="engine-icon" viewBox="0 0 140 40" xmlns="http://www.w3.org/2000/svg">
-            <g class="engine-net">
-              <line x1="10" y1="20" x2="22" y2="12" stroke="var(--cyan-glow)" stroke-width="1.2"/>
-              <line x1="10" y1="20" x2="22" y2="28" stroke="var(--cyan-glow)" stroke-width="1.2"/>
-              <line x1="22" y1="12" x2="22" y2="28" stroke="var(--cyan-glow)" stroke-width="1.2"/>
-              <circle cx="10" cy="20" r="3" fill="var(--cyan-glow)"/>
-              <circle cx="22" cy="12" r="3" fill="var(--cyan-glow)"/>
-              <circle cx="22" cy="28" r="3" fill="var(--cyan-glow)"/>
-            </g>
-            <line class="engine-pulse" x1="32" y1="20" x2="100" y2="20" stroke="var(--blue-bright)" stroke-width="1.4" stroke-dasharray="5 5"/>
-            <g class="engine-symbol" fill="none" stroke="var(--blue-bright)" stroke-width="1.6" stroke-linecap="round">
-              <path d="M110,10 C104,10 104,18 100,20 C104,22 104,30 110,30"/>
-              <path d="M130,10 C136,10 136,18 140,20 C136,22 136,30 130,30"/>
-            </g>
-          </svg>
-          <span class="reconstruction__engine-label">neural&nbsp;⇄&nbsp;symbolic reconciliation</span>
-        </div>
-
-
-        <p class="reconstruction__translation">
-          &ldquo;(His) treating (me) as a colleague, it is something that is to make the heart rejoice.&rdquo;
-        </p>
       </div>
-
-      <figcaption class="reconstruction__caption">
-        <span class="reconstruction__key">
-          <span class="reconstruction__swatch reconstruction__swatch--gap"></span> damaged / illegible
-          <span class="reconstruction__swatch reconstruction__swatch--blue"></span> model-reconstructed
-        </span>
-        Scroll to reconstruct — one line from the Sumerian corpus the model was trained on.
-        Cuneiform shown in real Unicode glyphs for authentic texture, not a literal
-        sign-by-sign transcription; transliteration and translation are as published.
-      </figcaption>
-    </figure>
+    </div>
   </section>
 
   <section class="section section--contact" id="contact">
