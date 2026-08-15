@@ -7,12 +7,14 @@ import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
    #lidar-scroller wrapper, same pattern as main.js) drives:
      p1 — overall scan fades in
      p2 — points shift from raw/unclassified gray to classified blue
-     p3 — detection bounding boxes fade in around pedestrian & car
+     p3 — detection bounding boxes + labels fade in
    ============================================================ */
 
 const canvas = document.getElementById('lidar-canvas');
 const panel = document.querySelector('.lidar-panel');
 const scroller = document.getElementById('lidar-scroller');
+const labelPed = document.querySelector('.detect-label[data-target="pedestrian"]');
+const labelCar = document.querySelector('.detect-label[data-target="car"]');
 
 if (canvas && panel && scroller) {
   const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -21,7 +23,7 @@ if (canvas && panel && scroller) {
   const CLASSIFIED_COLOR = new THREE.Color('#5b8dff');
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(40, 4 / 3, 0.1, 50);
+  const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 50);
   camera.position.set(0, 3.4, 2.6);
   camera.lookAt(0, 0, -1.6);
 
@@ -60,6 +62,28 @@ if (canvas && panel && scroller) {
   function addPoint(x, y, z, cluster) {
     positions.push(x, y, z);
     clusterOf.push(cluster);
+  }
+
+  // sample points scattered across the visible outer faces of a box —
+  // closer to what a LiDAR unit actually sees than a filled volume
+  function sampleBoxSurface(cx, cy, cz, sx, sy, sz, count, cluster) {
+    // faces: -x, +x, +y (top), -z, +z  (omit the underside — never scanned)
+    const faces = ['-x', '+x', '+y', '-z', '+z'];
+    for (let i = 0; i < count; i++) {
+      const face = faces[Math.floor(Math.random() * faces.length)];
+      let x, y, z;
+      const u = (Math.random() - 0.5) * sx;
+      const v = (Math.random() - 0.5) * sy;
+      const w = (Math.random() - 0.5) * sz;
+      switch (face) {
+        case '-x': x = -sx / 2; y = v; z = w; break;
+        case '+x': x = sx / 2; y = v; z = w; break;
+        case '+y': x = u; y = sy / 2; z = w; break;
+        case '-z': x = u; y = v; z = -sz / 2; break;
+        case '+z': x = u; y = v; z = sz / 2; break;
+      }
+      addPoint(cx + x, cy + sy / 2 + y, cz + z, cluster);
+    }
   }
 
   // sidewalk paving
@@ -110,20 +134,14 @@ if (canvas && panel && scroller) {
   const pedStartIndex = positions.length / 3;
   const WALK_RANGE = 2.1; // how far the pedestrian paces left/right
   for (const [lx, ly, lz] of pedLocal) {
-    addPoint(lx, ly, pedZ + lz, 'pedestrian'); // x set properly each frame; placeholder now
+    addPoint(lx, ly, pedZ + lz, 'pedestrian'); // x finalized each frame
   }
   const pedCount = pedLocal.length;
 
-  // ---- parked car: a low, elongated block on the road
+  // ---- parked car: chassis + cabin, surface-sampled for a recognizable silhouette
   const carX = 1.3, carZ = (ROAD_Z[0] + ROAD_Z[1]) / 2;
-  for (let i = 0; i < 44; i++) {
-    addPoint(
-      carX + (Math.random() - 0.5) * 1.7,
-      Math.random() * 0.5,
-      carZ + (Math.random() - 0.5) * 0.75,
-      'car'
-    );
-  }
+  sampleBoxSurface(carX, 0.02, carZ, 1.9, 0.42, 0.85, 34, 'car');       // lower body
+  sampleBoxSurface(carX - 0.15, 0.44, carZ, 1.05, 0.32, 0.62, 20, 'car'); // cabin, set back slightly
 
   function bounds(cluster, pad) {
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity, minZ = Infinity, maxZ = -Infinity;
@@ -141,7 +159,7 @@ if (canvas && panel && scroller) {
   }
 
   const pedBoundsLocal = bounds('pedestrian', 0.1); // computed pre-walk, x centered near 0
-  const carBounds = bounds('car', 0.08);
+  const carBounds = bounds('car', 0.06);
 
   const pointCount = positions.length / 3;
   const posArray = new Float32Array(positions);
@@ -185,6 +203,7 @@ if (canvas && panel && scroller) {
       (b.min.y + b.max.y) / 2,
       (b.min.z + b.max.z) / 2
     );
+    box.userData.height = b.max.y - b.min.y;
     return box;
   }
 
@@ -255,6 +274,25 @@ if (canvas && panel && scroller) {
     updateProgress();
   }
 
+  /* ---- HTML detection-label projection ---- */
+  const _labelWorldPos = new THREE.Vector3();
+
+  function updateLabel(label, box, opacity) {
+    if (!label) return;
+    box.getWorldPosition(_labelWorldPos);
+    _labelWorldPos.y += box.userData.height / 2 + 0.18;
+    _labelWorldPos.project(camera);
+
+    const w = panel.clientWidth;
+    const h = panel.clientHeight;
+    const x = (_labelWorldPos.x * 0.5 + 0.5) * w;
+    const y = (-_labelWorldPos.y * 0.5 + 0.5) * h;
+
+    label.style.left = `${x}px`;
+    label.style.top = `${y}px`;
+    label.style.opacity = opacity;
+  }
+
   /* ---- animation loop ---- */
   const clock = new THREE.Clock();
   const _c = new THREE.Color();
@@ -288,6 +326,9 @@ if (canvas && panel && scroller) {
 
     pedBox.material.opacity = p3 * 0.9;
     carBox.material.opacity = p3 * 0.9;
+
+    updateLabel(labelPed, pedBox, p3);
+    updateLabel(labelCar, carBox, p3);
 
     if (!REDUCED_MOTION) {
       // gentle continuous camera drift, like the scene is being lightly observed
