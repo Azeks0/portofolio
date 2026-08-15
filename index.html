@@ -50,38 +50,61 @@
   <section class="section" id="experience">
     <p class="section__eyebrow">WORK EXPERIENCE</p>
     <h2 class="section__title">Where I've worked</h2>
-    <div class="exp-list">
-      <div class="exp">
-        <div class="exp__header">
-          <h3 class="exp__role">Machine-Learning Engineer</h3>
-          <span class="exp__dates">Oct 2023 — Present</span>
-        </div>
-        <p class="exp__org">dotLumen</p>
-        <ul class="exp__bullets">
-          <li>Model-level safety for a medical-grade pedestrian navigation device — failure-mode
-          analysis and robustness checks for reliable predictions in safety-critical scenarios.</li>
-          <li>Led ML infrastructure experimentation across FPN configurations and backbone
-          architectures, evaluating convergence, cost, and accuracy for deployment.</li>
-          <li>Built speech/audio voice command recognition models, improving accuracy by 32%,
-          and a CV-based blur detector to improve training data quality.</li>
-          <li>Built the backend for labeling tools and Stable Diffusion APIs for synthetic
-          dataset generation, expanding ML infrastructure for data and evaluation.</li>
-          <li>Worked on object detection and semantic segmentation, resolving system issues
-          and optimizing architectures to improve mAP and precision.</li>
-        </ul>
-      </div>
 
-      <div class="exp">
-        <div class="exp__header">
-          <h3 class="exp__role">Intern</h3>
-          <span class="exp__dates">Aug 2023 — Oct 2023</span>
+    <div class="exp-feature">
+      <div class="exp-feature__scrollytelling" id="lidar-scroller">
+        <div class="exp-feature__sticky">
+          <div class="exp-feature__grid">
+
+            <figure class="lidar-panel">
+              <canvas id="lidar-canvas"></canvas>
+              <figcaption class="lidar-panel__caption">
+                <span class="lidar-panel__key">
+                  <span class="lidar-panel__swatch lidar-panel__swatch--raw"></span> raw depth scan
+                  <span class="lidar-panel__swatch lidar-panel__swatch--blue"></span> classified
+                </span>
+                Illustrative point-cloud scene, not dotLumen's actual system output — scroll
+                to resolve raw depth data into classified obstacles with detection boxes.
+              </figcaption>
+            </figure>
+
+            <div class="exp-list">
+              <div class="exp">
+                <div class="exp__header">
+                  <h3 class="exp__role">Machine-Learning Engineer</h3>
+                  <span class="exp__dates">Oct 2023 — Present</span>
+                </div>
+                <p class="exp__org">dotLumen</p>
+                <ul class="exp__bullets">
+                  <li>Model-level safety for a medical-grade pedestrian navigation device — failure-mode
+                  analysis and robustness checks for reliable predictions in safety-critical scenarios.</li>
+                  <li>Led ML infrastructure experimentation across FPN configurations and backbone
+                  architectures, evaluating convergence, cost, and accuracy for deployment.</li>
+                  <li>Built speech/audio voice command recognition models, improving accuracy by 32%,
+                  and a CV-based blur detector to improve training data quality.</li>
+                  <li>Built the backend for labeling tools and Stable Diffusion APIs for synthetic
+                  dataset generation, expanding ML infrastructure for data and evaluation.</li>
+                  <li>Worked on object detection and semantic segmentation, resolving system issues
+                  and optimizing architectures to improve mAP and precision.</li>
+                </ul>
+              </div>
+
+              <div class="exp">
+                <div class="exp__header">
+                  <h3 class="exp__role">Intern</h3>
+                  <span class="exp__dates">Aug 2023 — Oct 2023</span>
+                </div>
+                <p class="exp__org">dotLumen</p>
+                <ul class="exp__bullets">
+                  <li>Created data visualizations and statistics to support ongoing research projects.</li>
+                  <li>Labeled datasets for machine learning models, helping improve training.</li>
+                  <li>Carried out basic market research, gathered statistics and made reports.</li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
         </div>
-        <p class="exp__org">dotLumen</p>
-        <ul class="exp__bullets">
-          <li>Created data visualizations and statistics to support ongoing research projects.</li>
-          <li>Labeled datasets for machine learning models, helping improve training.</li>
-          <li>Carried out basic market research, gathered statistics and made reports.</li>
-        </ul>
       </div>
     </div>
   </section>
@@ -293,6 +316,7 @@
 </main>
 
 <script type="module" src="brain.js"></script>
+<script type="module" src="lidar.js"></script>
 <script src="main.js" defer></script>
 </body>
 </html>
