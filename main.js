@@ -41,9 +41,15 @@ if (stage && scroller && !prefersReducedMotion) {
     const p2 = clamp01(progress * 3 - 1);   // crossfade to transliteration
     const p3 = clamp01(progress * 3 - 2);   // translation fades in
 
+    // engine visibility: rises with p1 (gap-fill), falls back to 0 as p2
+    // (crossfade) takes over, and stays hidden through p3 — a clean
+    // fade in/out window instead of just riding p1 up and never coming back down
+    const pe = p1 * (1 - p2);
+
     stage.style.setProperty('--p1', p1.toFixed(3));
     stage.style.setProperty('--p2', p2.toFixed(3));
     stage.style.setProperty('--p3', p3.toFixed(3));
+    stage.style.setProperty('--pe', pe.toFixed(3));
   }
 
   function onScroll() {
