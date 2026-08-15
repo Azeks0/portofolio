@@ -19,8 +19,9 @@
 <header class="nav">
   <a class="nav__mark" href="#top">AV</a>
   <nav class="nav__links">
-    <a href="#work">Work</a>
-    <a href="#research">Research</a>
+    <a href="#experience">Experience</a>
+    <a href="#research">Publications</a>
+    <a href="#projects">Projects</a>
     <a href="#contact">Contact</a>
   </nav>
 </header>
@@ -31,10 +32,6 @@
   <div class="hero__content">
     <p class="eyebrow">ML ENGINEER — SPEECH · VISION · LANGUAGE</p>
     <h1 class="hero__title">Andrei Voinea</h1>
-    <p class="hero__subtitle">
-      Building perception and reasoning systems that hold up in the real world —
-      from safety-critical navigation models to published research in low-resource NLP.
-    </p>
     <div class="hero__meta">
       <span>Currently — ML Engineer @ dotLumen</span>
       <span class="dot">·</span>
@@ -50,48 +47,61 @@
 
 <main>
 
-  <section class="section" id="work">
-    <p class="section__eyebrow">SELECTED WORK</p>
-    <h2 class="section__title">Systems, not just models</h2>
-    <div class="card-grid">
-      <article class="card">
-        <p class="card__tag">SELF-SUPERVISED · ASTROPHYSICS</p>
-        <h3>Multi-Detector Autoencoder for Gamma-Ray Burst Detection</h3>
-        <p>An end-to-end pipeline over 147K Fermi satellite samples — 12-detector geometric
-        alignment, a 50M-parameter autoencoder, and anomaly detection via reconstruction error.
-        99% background classification accuracy.</p>
-      </article>
-      <article class="card">
-        <p class="card__tag">RAG · FULL-STACK</p>
-        <h3>AI Resume Analyzer</h3>
-        <p>A resume analysis platform pairing a FastAPI backend with pgvector semantic search
-        and an LLM-driven chatbot for job-match reasoning, served through a Next.js frontend.</p>
-      </article>
-      <article class="card">
-        <p class="card__tag">SAFETY-CRITICAL · CV</p>
-        <h3>Pedestrian Navigation, dotLumen</h3>
-        <p>Failure-mode analysis and robustness checks for a medical-grade navigation device —
-        plus voice command models and CV tooling that moved detection accuracy forward.</p>
-      </article>
+  <section class="section" id="experience">
+    <p class="section__eyebrow">WORK EXPERIENCE</p>
+    <h2 class="section__title">Where I've worked</h2>
+    <div class="exp-list">
+      <div class="exp">
+        <div class="exp__header">
+          <h3 class="exp__role">Machine-Learning Engineer</h3>
+          <span class="exp__dates">Oct 2023 — Present</span>
+        </div>
+        <p class="exp__org">dotLumen</p>
+        <ul class="exp__bullets">
+          <li>Model-level safety for a medical-grade pedestrian navigation device — failure-mode
+          analysis and robustness checks for reliable predictions in safety-critical scenarios.</li>
+          <li>Led ML infrastructure experimentation across FPN configurations and backbone
+          architectures, evaluating convergence, cost, and accuracy for deployment.</li>
+          <li>Built speech/audio voice command recognition models, improving accuracy by 32%,
+          and a CV-based blur detector to improve training data quality.</li>
+          <li>Built the backend for labeling tools and Stable Diffusion APIs for synthetic
+          dataset generation, expanding ML infrastructure for data and evaluation.</li>
+          <li>Worked on object detection and semantic segmentation, resolving system issues
+          and optimizing architectures to improve mAP and precision.</li>
+        </ul>
+      </div>
+
+      <div class="exp">
+        <div class="exp__header">
+          <h3 class="exp__role">Intern</h3>
+          <span class="exp__dates">Aug 2023 — Oct 2023</span>
+        </div>
+        <p class="exp__org">dotLumen</p>
+        <ul class="exp__bullets">
+          <li>Created data visualizations and statistics to support ongoing research projects.</li>
+          <li>Labeled datasets for machine learning models, helping improve training.</li>
+          <li>Carried out basic market research, gathered statistics and made reports.</li>
+        </ul>
+      </div>
     </div>
   </section>
 
   <section class="section" id="research">
-    <p class="section__eyebrow">RESEARCH</p>
+    <p class="section__eyebrow">PUBLICATIONS</p>
     <h2 class="section__title">Published work</h2>
     <div class="pub-list">
       <a class="pub" href="#">
         <span class="pub__year">2026</span>
         <span class="pub__body">
           <strong>Validator-Guided Hard Negative Mining for Masked Language Modeling</strong>
-          <em>in Low-Resource Ancient Languages</em> — ACL 2026 Student Research Workshop
+          <em>in Low-Resource Ancient Languages</em> — <span class="pub__highlight">ACL 2026</span> Student Research Workshop
         </span>
       </a>
       <a class="pub" href="#">
         <span class="pub__year">2025</span>
         <span class="pub__body">
           <strong>Reconstruction of Babylonian Texts: Integrating Transformers with Symbolic Reasoning</strong>
-          16th Computer Science Student Conference, Romania — top distinction
+          16th Computer Science Student Conference, Romania — <span class="pub__highlight">top distinction</span>
         </span>
       </a>
     </div>
@@ -178,35 +188,35 @@
                 <div class="reconstruction__engine" aria-hidden="true">
                   <svg class="engine-icon" viewBox="0 0 230 70" xmlns="http://www.w3.org/2000/svg">
                     <g class="engine-net">
-          <line x1="14" y1="15" x2="52" y2="8" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="14" y1="15" x2="52" y2="26" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="14" y1="15" x2="52" y2="44" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="14" y1="15" x2="52" y2="62" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="14" y1="35" x2="52" y2="8" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="14" y1="35" x2="52" y2="26" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="14" y1="35" x2="52" y2="44" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="14" y1="35" x2="52" y2="62" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="14" y1="55" x2="52" y2="8" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="14" y1="55" x2="52" y2="26" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="14" y1="55" x2="52" y2="44" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="14" y1="55" x2="52" y2="62" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="52" y1="8" x2="90" y2="25" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="52" y1="8" x2="90" y2="45" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="52" y1="26" x2="90" y2="25" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="52" y1="26" x2="90" y2="45" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="52" y1="44" x2="90" y2="25" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="52" y1="44" x2="90" y2="45" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="52" y1="62" x2="90" y2="25" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <line x1="52" y1="62" x2="90" y2="45" stroke="var(--cyan-glow)" stroke-width="0.7" stroke-opacity="0.35"/>
-          <circle cx="14" cy="15" r="3" fill="var(--cyan-glow)"/>
-          <circle cx="14" cy="35" r="3" fill="var(--cyan-glow)"/>
-          <circle cx="14" cy="55" r="3" fill="var(--cyan-glow)"/>
-          <circle cx="52" cy="8" r="3" fill="var(--cyan-glow)"/>
-          <circle cx="52" cy="26" r="3" fill="var(--cyan-glow)"/>
-          <circle cx="52" cy="44" r="3" fill="var(--cyan-glow)"/>
-          <circle cx="52" cy="62" r="3" fill="var(--cyan-glow)"/>
-          <circle cx="90" cy="25" r="3" fill="var(--cyan-glow)"/>
-          <circle cx="90" cy="45" r="3" fill="var(--cyan-glow)"/>
+          <line x1="14" y1="15" x2="52" y2="8" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="14" y1="15" x2="52" y2="26" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="14" y1="15" x2="52" y2="44" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="14" y1="15" x2="52" y2="62" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="14" y1="35" x2="52" y2="8" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="14" y1="35" x2="52" y2="26" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="14" y1="35" x2="52" y2="44" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="14" y1="35" x2="52" y2="62" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="14" y1="55" x2="52" y2="8" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="14" y1="55" x2="52" y2="26" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="14" y1="55" x2="52" y2="44" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="14" y1="55" x2="52" y2="62" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="52" y1="8" x2="90" y2="25" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="52" y1="8" x2="90" y2="45" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="52" y1="26" x2="90" y2="25" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="52" y1="26" x2="90" y2="45" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="52" y1="44" x2="90" y2="25" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="52" y1="44" x2="90" y2="45" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="52" y1="62" x2="90" y2="25" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <line x1="52" y1="62" x2="90" y2="45" stroke="var(--blue-bright)" stroke-width="0.7" stroke-opacity="0.35"/>
+          <circle cx="14" cy="15" r="3" fill="var(--blue-bright)"/>
+          <circle cx="14" cy="35" r="3" fill="var(--blue-bright)"/>
+          <circle cx="14" cy="55" r="3" fill="var(--blue-bright)"/>
+          <circle cx="52" cy="8" r="3" fill="var(--blue-bright)"/>
+          <circle cx="52" cy="26" r="3" fill="var(--blue-bright)"/>
+          <circle cx="52" cy="44" r="3" fill="var(--blue-bright)"/>
+          <circle cx="52" cy="62" r="3" fill="var(--blue-bright)"/>
+          <circle cx="90" cy="25" r="3" fill="var(--blue-bright)"/>
+          <circle cx="90" cy="45" r="3" fill="var(--blue-bright)"/>
                     </g>
 
                     <line class="engine-pulse" x1="96" y1="35" x2="138" y2="35" stroke="var(--blue-bright)" stroke-width="1.4" stroke-dasharray="5 5"/>
@@ -218,7 +228,7 @@
                       <line x1="150" y1="43" x2="174" y2="43" stroke="var(--blue-bright)" stroke-width="2" stroke-linecap="round" stroke-opacity="0.75"/>
                     </g>
                   </svg>
-                  <span class="reconstruction__engine-label">neural&nbsp;⇄&nbsp;symbolic reconciliation</span>
+                  <span class="reconstruction__engine-label">neural&nbsp;⇄&nbsp;symbolic engine</span>
                 </div>
 
                 <p class="reconstruction__translation">
@@ -240,6 +250,33 @@
           </div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section class="section" id="projects">
+    <p class="section__eyebrow">PROJECTS</p>
+    <h2 class="section__title">Systems, not just models</h2>
+    <div class="card-grid">
+      <article class="card">
+        <p class="card__tag">SELF-SUPERVISED · ASTROPHYSICS</p>
+        <h3>Multi-Detector Autoencoder for Gamma-Ray Burst Detection</h3>
+        <p>An end-to-end pipeline over 147K Fermi satellite samples — 12-detector geometric
+        alignment, a 50M-parameter autoencoder, and anomaly detection via reconstruction error.
+        99% background classification accuracy.</p>
+      </article>
+      <article class="card">
+        <p class="card__tag">RAG · FULL-STACK</p>
+        <h3>AI Resume Analyzer</h3>
+        <p>A resume analysis platform pairing a FastAPI backend with pgvector semantic search
+        and an LLM-driven chatbot for job-match reasoning, served through a Next.js frontend.</p>
+      </article>
+      <article class="card">
+        <p class="card__tag">LLM · QUANTIZATION</p>
+        <h3>Fine-tuned &amp; Quantized LLaMA</h3>
+        <p>Fine-tuned a LLaMA model through iterative evaluation cycles and applied 4-bit
+        quantization to cut model size and inference time while preserving accuracy, shipped
+        behind a deployable API.</p>
+      </article>
     </div>
   </section>
 
