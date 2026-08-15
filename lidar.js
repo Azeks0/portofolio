@@ -3,8 +3,8 @@ import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 /* ============================================================
    A small illustrative point-cloud "scan" of a sidewalk running
    alongside a road, with a pedestrian walking along the sidewalk
-   and a parked car on the road. Scroll progress (via the pinned
-   #lidar-scroller wrapper, same pattern as main.js) drives:
+   and a parked car on the road. Runs as a continuous self-driving
+   loop (not scroll-tied):
      p1 — overall scan fades in
      p2 — points shift from raw/unclassified gray to classified blue
      p3 — detection bounding boxes + labels fade in
@@ -12,11 +12,10 @@ import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
 const canvas = document.getElementById('lidar-canvas');
 const panel = document.querySelector('.lidar-panel');
-const scroller = document.getElementById('lidar-scroller');
 const labelPed = document.querySelector('.detect-label[data-target="pedestrian"]');
 const labelCar = document.querySelector('.detect-label[data-target="car"]');
 
-if (canvas && panel && scroller) {
+if (canvas && panel) {
   const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const RAW_COLOR = new THREE.Color('#9aa1af');
@@ -239,39 +238,24 @@ if (canvas && panel && scroller) {
   window.addEventListener('resize', resize);
   resize();
 
-  /* ---- scroll-driven progress (same pinned-runway pattern as main.js) ---- */
+  /* ---- self-running loop progress (same rise/hold/fall/hold pattern as main.js) ---- */
   function clamp01(v) { return Math.max(0, Math.min(1, v)); }
 
   let p1 = REDUCED_MOTION ? 1 : 0;
   let p2 = REDUCED_MOTION ? 1 : 0;
   let p3 = REDUCED_MOTION ? 1 : 0;
-  let ticking = false;
 
-  function updateProgress() {
-    ticking = false;
-    const rect = scroller.getBoundingClientRect();
-    const vh = window.innerHeight;
-    const runway = rect.height - vh;
+  const RISE_TIME = 5.5;
+  const HOLD_FULL = 1.8;
+  const HOLD_EMPTY = 1.2;
+  const CYCLE = RISE_TIME * 2 + HOLD_FULL + HOLD_EMPTY;
 
-    let progress;
-    if (runway > 0) {
-      progress = clamp01(-rect.top / runway);
-    } else {
-      progress = clamp01((vh - rect.top) / (vh + rect.height));
-    }
-
-    p1 = clamp01(progress * 3);
-    p2 = clamp01(progress * 3 - 1);
-    p3 = clamp01(progress * 3 - 2);
-  }
-
-  function onScroll() {
-    if (!ticking) { ticking = true; requestAnimationFrame(updateProgress); }
-  }
-
-  if (!REDUCED_MOTION) {
-    window.addEventListener('scroll', onScroll, { passive: true });
-    updateProgress();
+  function loopProgress(elapsed) {
+    const t = elapsed % CYCLE;
+    if (t < RISE_TIME) return t / RISE_TIME;
+    if (t < RISE_TIME + HOLD_FULL) return 1;
+    if (t < RISE_TIME * 2 + HOLD_FULL) return 1 - (t - RISE_TIME - HOLD_FULL) / RISE_TIME;
+    return 0;
   }
 
   /* ---- HTML detection-label projection ---- */
@@ -300,6 +284,13 @@ if (canvas && panel && scroller) {
   function animate() {
     requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
+
+    if (!REDUCED_MOTION) {
+      const progress = loopProgress(t);
+      p1 = clamp01(progress * 3);
+      p2 = clamp01(progress * 3 - 1);
+      p3 = clamp01(progress * 3 - 2);
+    }
 
     material.opacity = 0.15 + p1 * 0.85;
 

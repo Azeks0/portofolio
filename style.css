@@ -206,20 +206,7 @@ a { color: inherit; text-decoration: none; }
 
 /* work experience */
 .exp-feature {
-  margin-top: 8px;
-}
-
-.exp-feature__scrollytelling {
-  position: relative;
-  height: 230vh; /* scroll runway — see paper-feature for the same pattern */
-}
-
-.exp-feature__sticky {
-  position: sticky;
-  top: 0;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
+  margin-top: 24px;
 }
 
 .exp-feature__grid {
@@ -316,8 +303,6 @@ a { color: inherit; text-decoration: none; }
 .lidar-panel__swatch--blue { background: var(--blue-bright); }
 
 @media (max-width: 860px) {
-  .exp-feature__scrollytelling { height: auto; }
-  .exp-feature__sticky { position: static; min-height: auto; padding: 0 0 40px; }
   .exp-feature__grid { grid-template-columns: 1fr; gap: 40px; }
   .lidar-panel {
     aspect-ratio: 4 / 3;
@@ -495,19 +480,6 @@ a { color: inherit; text-decoration: none; }
   border-top: 1px solid var(--line);
 }
 
-.paper-feature__scrollytelling {
-  position: relative;
-  height: 260vh; /* increase for an even slower scroll; ~160vh of actual scrub distance */
-}
-
-.paper-feature__sticky {
-  position: sticky;
-  top: 0;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-}
-
 .paper-feature__grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -569,8 +541,6 @@ a { color: inherit; text-decoration: none; }
 }
 
 @media (max-width: 860px) {
-  .paper-feature__scrollytelling { height: auto; }
-  .paper-feature__sticky { position: static; min-height: auto; padding: 0 0 40px; }
   .paper-feature__grid { grid-template-columns: 1fr; gap: 48px; }
 }
 

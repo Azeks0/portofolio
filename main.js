@@ -1,65 +1,56 @@
-/* Drives the cuneiform -> transliteration -> translation sequence
-   continuously off scroll position (not discrete steps). The visible
-   stage sits pinned (position: sticky) inside a tall `.paper-feature__
-   scrollytelling` wrapper — the extra height above 100vh is scroll
-   "runway": the taller that wrapper, the more scrolling it takes to
-   move through the sequence. We compute one 0..1 progress value from
-   how far we've scrolled through that runway, then split it into three
-   overlapping phases, each written to a CSS custom property the
-   stylesheet reads directly. */
+/* Drives the cuneiform -> transliteration -> translation sequence as a
+   continuous, self-running loop (not tied to scroll). One progress value
+   cycles through: rise 0->1 (reveal), hold at 1 (read time), fall 1->0
+   (reverse), hold at 0 (pause) — then repeats. That single value is split
+   into three overlapping phases exactly as before, each written to a CSS
+   custom property the stylesheet reads directly. */
 
 const stage = document.querySelector('.reconstruction__stage');
-const scroller = document.getElementById('reconstruction-scroller');
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-if (stage && scroller && !prefersReducedMotion) {
-  let ticking = false;
-
+if (stage) {
   function clamp01(v) {
     return Math.max(0, Math.min(1, v));
   }
 
-  function updateProgress() {
-    ticking = false;
-    const rect = scroller.getBoundingClientRect();
-    const vh = window.innerHeight;
-    const runway = rect.height - vh; // scrollable distance while the stage stays pinned
+  if (prefersReducedMotion) {
+    stage.style.setProperty('--p1', '1');
+    stage.style.setProperty('--p2', '1');
+    stage.style.setProperty('--p3', '1');
+    stage.style.setProperty('--pe', '0');
+  } else {
+    const RISE_TIME = 5.5;   // seconds to reveal
+    const HOLD_FULL = 1.8;   // pause once fully resolved
+    const HOLD_EMPTY = 1.2;  // pause once back at the start
+    const CYCLE = RISE_TIME * 2 + HOLD_FULL + HOLD_EMPTY;
 
-    let progress;
-    if (runway > 0) {
-      // pinned desktop layout: progress = how far we've scrolled into the runway
-      progress = clamp01(-rect.top / runway);
-    } else {
-      // narrow-screen fallback (sticky disabled, wrapper is its natural height):
-      // just track the stage's own pass through the viewport
-      progress = clamp01((vh - rect.top) / (vh + rect.height));
+    const start = performance.now();
+
+    function loopProgress(elapsed) {
+      const t = elapsed % CYCLE;
+      if (t < RISE_TIME) return t / RISE_TIME;
+      if (t < RISE_TIME + HOLD_FULL) return 1;
+      if (t < RISE_TIME * 2 + HOLD_FULL) return 1 - (t - RISE_TIME - HOLD_FULL) / RISE_TIME;
+      return 0;
     }
 
-    // three sequential phases, each covering a third of the scroll range,
-    // driven off the same continuous progress value
-    const p1 = clamp01(progress * 3);       // gaps fill in
-    const p2 = clamp01(progress * 3 - 1);   // crossfade to transliteration
-    const p3 = clamp01(progress * 3 - 2);   // translation fades in
+    function tick() {
+      const elapsed = (performance.now() - start) / 1000;
+      const progress = loopProgress(elapsed);
 
-    // engine visibility: rises with p1 (gap-fill), falls back to 0 as p2
-    // (crossfade) takes over, and stays hidden through p3 — a clean
-    // fade in/out window instead of just riding p1 up and never coming back down
-    const pe = p1 * (1 - p2);
+      const p1 = clamp01(progress * 3);
+      const p2 = clamp01(progress * 3 - 1);
+      const p3 = clamp01(progress * 3 - 2);
+      const pe = p1 * (1 - p2);
 
-    stage.style.setProperty('--p1', p1.toFixed(3));
-    stage.style.setProperty('--p2', p2.toFixed(3));
-    stage.style.setProperty('--p3', p3.toFixed(3));
-    stage.style.setProperty('--pe', pe.toFixed(3));
-  }
+      stage.style.setProperty('--p1', p1.toFixed(3));
+      stage.style.setProperty('--p2', p2.toFixed(3));
+      stage.style.setProperty('--p3', p3.toFixed(3));
+      stage.style.setProperty('--pe', pe.toFixed(3));
 
-  function onScroll() {
-    if (!ticking) {
-      ticking = true;
-      requestAnimationFrame(updateProgress);
+      requestAnimationFrame(tick);
     }
-  }
 
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll);
-  updateProgress();
+    requestAnimationFrame(tick);
+  }
 }
