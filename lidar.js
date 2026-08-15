@@ -1,13 +1,13 @@
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
 /* ============================================================
-   A small illustrative point-cloud "scan" of a street scene —
-   a pedestrian and an obstacle sitting on a ground grid. Scroll
-   progress (via the pinned #lidar-scroller wrapper, same pattern
-   as main.js) drives three things:
+   A small illustrative point-cloud "scan" of a sidewalk running
+   alongside a road, with a pedestrian walking along the sidewalk
+   and a parked car on the road. Scroll progress (via the pinned
+   #lidar-scroller wrapper, same pattern as main.js) drives:
      p1 — overall scan fades in
      p2 — points shift from raw/unclassified gray to classified blue
-     p3 — detection bounding boxes fade in around the two objects
+     p3 — detection bounding boxes fade in around pedestrian & car
    ============================================================ */
 
 const canvas = document.getElementById('lidar-canvas');
@@ -21,9 +21,9 @@ if (canvas && panel && scroller) {
   const CLASSIFIED_COLOR = new THREE.Color('#5b8dff');
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(42, 4 / 3, 0.1, 50);
-  camera.position.set(0.6, 1.9, 5.4);
-  camera.lookAt(0, 0.9, -1.4);
+  const camera = new THREE.PerspectiveCamera(40, 4 / 3, 0.1, 50);
+  camera.position.set(0, 3.4, 2.6);
+  camera.lookAt(0, 0, -1.6);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -37,7 +37,7 @@ if (canvas && panel && scroller) {
     const c = document.createElement('canvas');
     c.width = size; c.height = size;
     const ctx = c.getContext('2d');
-    const g = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+    const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
     g.addColorStop(0, 'rgba(255,255,255,1)');
     g.addColorStop(0.4, 'rgba(255,255,255,0.6)');
     g.addColorStop(1, 'rgba(255,255,255,0)');
@@ -46,56 +46,82 @@ if (canvas && panel && scroller) {
     return new THREE.CanvasTexture(c);
   }
 
-  /* ---- build the scene's point set ---- */
+  /* ---- scene layout (X = across the frame, Z = depth) ----
+     sidewalk band: near the camera, z in [-0.9, -0.3]
+     curb gap:      z in [-1.1, -0.9]
+     road band:     further back, z in [-2.5, -1.1]           */
+  const SIDEWALK_Z = [-0.9, -0.3];
+  const ROAD_Z = [-2.5, -1.1];
+  const X_RANGE = [-3, 3];
+
   const positions = [];
-  const clusterOf = []; // 'ground' | 'pedestrian' | 'obstacle'
+  const clusterOf = [];
 
   function addPoint(x, y, z, cluster) {
     positions.push(x, y, z);
     clusterOf.push(cluster);
   }
 
-  // ground grid, sparse street plane
-  for (let xi = -3; xi <= 3; xi += 0.45) {
-    for (let zi = -4; zi <= 1; zi += 0.45) {
-      addPoint(xi + (Math.random() - 0.5) * 0.08, Math.random() * 0.03, zi + (Math.random() - 0.5) * 0.08, 'ground');
+  // sidewalk paving
+  for (let x = X_RANGE[0]; x <= X_RANGE[1]; x += 0.32) {
+    for (let z = SIDEWALK_Z[0]; z <= SIDEWALK_Z[1]; z += 0.15) {
+      addPoint(x + (Math.random() - 0.5) * 0.05, Math.random() * 0.015, z + (Math.random() - 0.5) * 0.05, 'ground');
     }
   }
 
-  // back wall, faint context
-  for (let i = 0; i < 60; i++) {
-    addPoint((Math.random() - 0.5) * 6, Math.random() * 3, -4 - Math.random() * 0.3, 'ground');
+  // curb edge — a subtle brighter line marking the boundary
+  for (let x = X_RANGE[0]; x <= X_RANGE[1]; x += 0.22) {
+    addPoint(x, 0.05, -1.0, 'ground');
   }
 
-  // pedestrian — body cylinder + head cluster
-  const pedX = -1.1, pedZ = -1.6;
+  // road surface
+  for (let x = X_RANGE[0]; x <= X_RANGE[1]; x += 0.32) {
+    for (let z = ROAD_Z[0]; z <= ROAD_Z[1]; z += 0.28) {
+      addPoint(x + (Math.random() - 0.5) * 0.06, Math.random() * 0.015, z + (Math.random() - 0.5) * 0.06, 'ground');
+    }
+  }
+
+  // dashed lane markings down the center of the road
+  const laneZ = (ROAD_Z[0] + ROAD_Z[1]) / 2;
+  for (let x = X_RANGE[0]; x <= X_RANGE[1]; x += 0.5) {
+    if (Math.floor(x / 0.5) % 2 === 0) continue; // dash gaps
+    addPoint(x, 0.02, laneZ, 'ground');
+    addPoint(x + 0.12, 0.02, laneZ, 'ground');
+  }
+
+  // ---- pedestrian: body cylinder + head, authored in LOCAL space
+  // (local x/z centered at 0 so we can translate it laterally each frame)
+  const pedLocal = [];
+  const pedZ = (SIDEWALK_Z[0] + SIDEWALK_Z[1]) / 2;
   for (let i = 0; i < 34; i++) {
     const t = Math.random();
-    const y = 0.25 + t * 1.3;
-    const r = 0.16 * (1 - Math.abs(t - 0.5) * 0.3);
+    const y = 0.22 + t * 1.2;
+    const r = 0.14 * (1 - Math.abs(t - 0.5) * 0.3);
     const a = Math.random() * Math.PI * 2;
-    addPoint(pedX + Math.cos(a) * r, y, pedZ + Math.sin(a) * r, 'pedestrian');
+    pedLocal.push([Math.cos(a) * r, y, Math.sin(a) * r]);
   }
   for (let i = 0; i < 16; i++) {
     const a = Math.random() * Math.PI * 2;
     const p = Math.random() * Math.PI;
-    const r = 0.13;
-    addPoint(
-      pedX + r * Math.sin(p) * Math.cos(a),
-      1.65 + r * Math.cos(p),
-      pedZ + r * Math.sin(p) * Math.sin(a),
-      'pedestrian'
-    );
+    const r = 0.12;
+    pedLocal.push([r * Math.sin(p) * Math.cos(a), 1.5 + r * Math.cos(p), r * Math.sin(p) * Math.sin(a)]);
   }
 
-  // obstacle — low blocky object (e.g. a bollard / bench)
-  const obX = 1.3, obZ = -2.4;
-  for (let i = 0; i < 40; i++) {
+  const pedStartIndex = positions.length / 3;
+  const WALK_RANGE = 2.1; // how far the pedestrian paces left/right
+  for (const [lx, ly, lz] of pedLocal) {
+    addPoint(lx, ly, pedZ + lz, 'pedestrian'); // x set properly each frame; placeholder now
+  }
+  const pedCount = pedLocal.length;
+
+  // ---- parked car: a low, elongated block on the road
+  const carX = 1.3, carZ = (ROAD_Z[0] + ROAD_Z[1]) / 2;
+  for (let i = 0; i < 44; i++) {
     addPoint(
-      obX + (Math.random() - 0.5) * 0.9,
+      carX + (Math.random() - 0.5) * 1.7,
       Math.random() * 0.5,
-      obZ + (Math.random() - 0.5) * 0.45,
-      'obstacle'
+      carZ + (Math.random() - 0.5) * 0.75,
+      'car'
     );
   }
 
@@ -114,8 +140,8 @@ if (canvas && panel && scroller) {
     };
   }
 
-  const pedBounds = bounds('pedestrian', 0.1);
-  const obBounds = bounds('obstacle', 0.1);
+  const pedBoundsLocal = bounds('pedestrian', 0.1); // computed pre-walk, x centered near 0
+  const carBounds = bounds('car', 0.08);
 
   const pointCount = positions.length / 3;
   const posArray = new Float32Array(positions);
@@ -131,7 +157,7 @@ if (canvas && panel && scroller) {
   geometry.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
 
   const material = new THREE.PointsMaterial({
-    size: 0.05,
+    size: 0.045,
     map: makeGlowTexture(),
     vertexColors: true,
     transparent: true,
@@ -162,12 +188,13 @@ if (canvas && panel && scroller) {
     return box;
   }
 
-  const pedBox = makeBoxWireframe(pedBounds);
-  const obBox = makeBoxWireframe(obBounds);
-  group.add(pedBox, obBox);
+  const pedBox = makeBoxWireframe(pedBoundsLocal);
+  const pedBoxBaseX = pedBox.position.x;
+  const carBox = makeBoxWireframe(carBounds);
+  group.add(pedBox, carBox);
 
   /* continuous "actively scanning" sweep — decorative, not scroll-tied */
-  const sweepGeo = new THREE.PlaneGeometry(6.5, 3.2);
+  const sweepGeo = new THREE.PlaneGeometry(6.5, 2.6);
   const sweepMat = new THREE.MeshBasicMaterial({
     color: new THREE.Color('#5b8dff'),
     transparent: true,
@@ -238,6 +265,18 @@ if (canvas && panel && scroller) {
 
     material.opacity = 0.15 + p1 * 0.85;
 
+    // pedestrian pacing back and forth along the sidewalk
+    const walkX = REDUCED_MOTION ? 0 : Math.sin(t * 0.18) * WALK_RANGE;
+    for (let i = 0; i < pedCount; i++) {
+      const [lx, ly, lz] = pedLocal[i];
+      const idx = pedStartIndex + i;
+      posArray[idx * 3] = lx + walkX;
+      posArray[idx * 3 + 1] = ly;
+      posArray[idx * 3 + 2] = pedZ + lz;
+    }
+    geometry.attributes.position.needsUpdate = true;
+    pedBox.position.x = pedBoxBaseX + walkX;
+
     const colors = geometry.attributes.color.array;
     for (let i = 0; i < pointCount; i++) {
       _c.copy(RAW_COLOR).lerp(CLASSIFIED_COLOR, p2);
@@ -248,15 +287,15 @@ if (canvas && panel && scroller) {
     geometry.attributes.color.needsUpdate = true;
 
     pedBox.material.opacity = p3 * 0.9;
-    obBox.material.opacity = p3 * 0.9;
+    carBox.material.opacity = p3 * 0.9;
 
     if (!REDUCED_MOTION) {
       // gentle continuous camera drift, like the scene is being lightly observed
-      group.rotation.y = Math.sin(t * 0.15) * 0.06;
+      group.rotation.y = Math.sin(t * 0.12) * 0.04;
 
       // looping scan sweep across the depth of the scene
-      const sweepT = (t * 0.25) % 1;
-      sweep.position.z = -4 + sweepT * 5;
+      const sweepT = (t * 0.22) % 1;
+      sweep.position.z = -2.6 + sweepT * 3.2;
       sweep.material.opacity = 0.04 + Math.sin(sweepT * Math.PI) * 0.05;
     }
 

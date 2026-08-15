@@ -230,6 +230,10 @@ a { color: inherit; text-decoration: none; }
   width: 100%;
 }
 
+.exp-feature__grid > * {
+  min-width: 0; /* prevents long unbreakable content from forcing a grid blowout back to one column */
+}
+
 .lidar-panel {
   position: relative;
   width: 100%;
