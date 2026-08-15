@@ -50,8 +50,12 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 28px 5vw;
+  padding: 22px 5vw;
   font-family: var(--font-mono);
+  background: rgba(5, 7, 12, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
 }
 
 .nav__mark {
